@@ -1,0 +1,215 @@
+component prinoth_engine_OM471
+% Prinoth Engine OM471:2
+
+% pm_addunit('kWh', 3600, 'kJ');
+
+inputs
+    % Engine throttle 
+    theta = {0, '1'};                    % theta:left
+    ebs_stufe = {0, '1'};                % ebs_stufe:left
+    ebs_throttle = {0, '1'};             % ebs_throttle:left
+end
+
+outputs
+    % Engine power
+    Pe = {0, 'kW'};                     % Pe:right
+    % Engine speed
+    we = {0, 'rpm'};                    % we:right
+    % Engine torque
+    te = {0, 'N*m'};                    % te:right        
+    % Engine braking torque
+    tebs = {0, 'N*m'};                    % tebs:right    
+    % Engine braking power
+    Pebs = {0, 'kW'};                     % Pebs:right
+    % Specific engine consumption
+    sfc = {0, 'g/(kW*hr)'};                % sfc:right    
+    % Engine consumption
+    fc = {0, 'g'};                % fc:right    
+end
+
+nodes
+   C = foundation.mechanical.rotational.rotational; % C:left
+   D = foundation.mechanical.rotational.rotational; % D:right
+end
+
+parameters
+    cshaft_inertia = { 5.00, 'kg*m^2' };           % System inertia
+    initial_speed = { 5, '1' };                    % Initial speed (rpm)
+end
+
+parameters(Access=private) 
+    
+    rpm_consumption = {[800 900 1000 1100 1200 1300 1400 1500 1600 1700 ...
+        1800], 'rpm'};
+
+    power_consumption = {[25 50 75 100 125 150 175 200 225 250 275 300 ...
+        325 350 375 400], 'kW'};
+        
+    consumption = {[...
+        120.0 123.0 124.0 128.0 130.0 132.0 134.0 136.0 138.0 140.0 142.0;
+        110.0 116.0 120.0 122.0 124.0 126.0 128.0 130.0 132.0 134.0 138.0;
+        106.0 107.0 108.0 109.0 110.0 112.0 115.0 118.0 122.0 126.0 130.0;
+        106.0 104.0 104.0 104.0 105.0 107.0 108.0 112.0 120.0 124.0 130.0;
+        106.0 104.0 102.0 101.0 102.0 103.0 104.0 106.0 112.0 116.0 118.0;
+        105.0 103.0 101.0 101.0 101.5 102.0 103.5 105.0 108.0 112.0 114.0;
+        106.0 103.0 101.5 100.5 100.8 101.2 102.0 103.0 105.0 108.0 112.0;
+        112.0 103.0 101.1 100.5 100.5 100.5 101.1 102.0 104.0 106.0 108.0;
+        116.0 105.0 101.0 100.3 100.1 100.3 100.6 101.5 103.5 105.0 107.5;
+        118.0 104.0 101.5 100.2 100.0 100.0 100.4 101.5 103.0 104.0 107.0;
+        120.0 110.0 104.0 100.6 100.0 100.0 100.4 101.4 102.5 104.0 106.0;
+        122.0 118.0 110.0 102.0 100.6 100.2 100.5 101.1 102.1 103.5 105.2;
+        124.0 120.0 110.0 105.0 102.0 101.2 101.0 101.5 102.5 103.2 104.8;
+        126.0 122.5 118.0 110.0 108.0 102.8 102.2 102.4 103.0 104.0 105.0;
+        128.0 126.0 120.0 115.0 110.0 106.0 103.0 103.2 103.4 104.0 105.1;
+        128.2 126.2 122.0 116.0 112.0 106.5 103.8 103.5 103.8 104.0...
+        105.2]./100*185, 'g/(kW*hr)'};
+
+    
+    rpm = {[-2100 -1900 -1800 -1700 -1600 -1500 -1450 -1400 -1300 -1200 -1100 -1000 -940 -800 ...
+            -700 -500 -350 -200 -50 50 200 350 500 700 800 940 1000 1100 1200 1300 1400 ...
+            1450 1500 1600 1700 1800 1900 2100], 'rpm'};
+    
+    torque_friction = {[313 283 268 255.5 243 230.5 224.25 218 205.5 193 ...
+        183 173 168 164 154 144 130 40 10 ...
+        -10 -40 -130 -144 -154 -164 -168 -173 -183 -193 -205.5 -218 ...
+        -224.25 -230.5 -243 -255.5 -268 -283 -313], 'N*m'};
+    
+    torque_nom = {[ -1241 -1862 -2048 -2182 -2328 -2473 -2543 -2562 ...
+            -2600 -2592 -2579 -2564 -2553 -2160 -1878 -1315 -1050 ...
+            -850 -600 600 850 1050 1315  1878  2160  2553  2564 ...
+            2579  2592  2600 2562 2543 2473 2328 2182 2048 1862 ...
+            1241], 'N*m'} - torque_friction;
+    
+    torque_ebs1 = {[0	0	0	0	0	0	0	0
+                    0	0	0	0	0	0	0	0
+                    -290	-298	-305	-313	-320	-328	-335	-340
+                    -360	-377	-393	-410	-426	-443	-459	-470
+                    -390	-419	-447	-476	-504	-533	-561	-580
+                    -420	-459	-498	-537	-576	-615	-654	-680
+                    -455	-504	-553	-601	-650	-699	-748	-780
+                    -500	-557	-614	-671	-728	-785	-842	-880
+                    -560	-616	-671	-727	-782	-838	-893	-930],...
+    'N*m'}; % ebs1
+
+    torque_ebs2 = {[0	0	0	0	0	0	0	0
+                    0	0	0	0	0	0	0	0
+                    -280	-282	-283	-285	-286	-288	-289	-290
+                    -350	-358	-365	-373	-380	-388	-395	-400
+                    -420	-432	-444	-456	-468	-480	-492	-500
+                    -510	-524	-537	-551	-564	-578	-591	-600
+                    -620	-631	-641	-652	-662	-673	-683	-690
+                    -720	-728	-735	-743	-750	-758	-765	-770
+                    -820	-825	-829	-834	-838	-843	-847	-850],...
+    'N*m'}; % ebs2
+
+    torque_ebs3 = {[0	0	0	0	0	0	0	0
+                    0	0	0	0	0	0	0	0
+                    -440	-458	-476	-494	-512	-530	-548	-560
+                    -550	-612	-673	-735	-796	-858	-919	-960
+                    -680	-779	-878	-977	-1076	-1175	-1274	-1340
+                    -840	-936	-1032	-1128	-1224	-1320	-1416	-1480
+                    -1050	-1128	-1206	-1284	-1362	-1440	-1518	-1570
+                    -1240	-1297	-1354	-1411	-1468	-1525	-1582	-1620
+                    -1430	-1465	-1499	-1534	-1568	-1603	-1637	-1660],...
+    'N*m'}; % ebs3
+
+    rpm_ebs = {[1 200 1000 1300 1500 1700 1900 2100 2300]', 'rpm'}; % input speed for engine map
+ 
+    ebs_perc = {[0, 15, 30, 45, 60, 75, 90, 100], '1'}; % input throttle for engine 3D map
+    
+    a0_throttle = {(2*pi*25)^2, '1/s^2'}     % Throttle model parameter wn^2
+    a1_throttle = {(4*pi*25), '1/s'}     % Throttle model parameter 2*zeta*wn    
+    a0_ebs = {(2*pi*5)^2, '1/s^2'}     % Throttle model parameter wn^2
+    a1_ebs = {(2*1*2*pi*5), '1/s'}     % Throttle model parameter 2*zeta*wn
+end
+
+branches    
+    t_in: C.t -> *;
+    t_out : * -> D.t;
+end
+
+variables(Access=private)
+    w = {value = {initial_speed,'rpm'}, priority = priority.high}; % Rotational speed (rpm)
+%     w = {value = {initial_speed,'rpm'}}; % Rotational speed (rpm)
+    t_in = {0, 'N*m'};                    % Input shaft torque
+    t_out = {0, 'N*m' };                  % Load shaft torque
+    t_b = {0, 'N*m' };                    % Friction torque
+    t_ebs1 = {0, 'N*m' };                 % EBS stufe 1 torque
+    t_ebs2 = {0, 'N*m' };                 % EBS stufe 2 torque
+    t_ebs3 = {0, 'N*m' };                 % EBS stufe 3 torque
+    throttle = {0, '1' };                  % Input shaft torque from engine map
+    y_throttle = {0, '1' };               % Input shaft torque after second order filter as model of the throttle
+    x1_throttle = {0, 's^2' };            % state variable of the second order filter as model of the throttle
+    x2_throttle = {0, 's' };              % state variable of the second order filter as model of the throttle
+    y_ebs = {0, 'N*m' };                    % 
+    x1_ebs = {0, 'N*m*s^2' };                 % 
+    x2_ebs = {0, 'N*m*s' };                   %  
+    ebs_cmd = {0, '1'}
+end
+
+equations
+    let 
+
+    in
+       if ebs_throttle >= 100
+          ebs_cmd == 100;
+       elseif ebs_throttle <= 0
+          ebs_cmd == 0;
+       else
+          ebs_cmd == ebs_throttle;
+       end
+
+       % Torque limit extrapolation
+       t_in == tablelookup(rpm, torque_nom, w, interpolation = smooth, extrapolation = linear);
+       t_b == tablelookup(rpm, torque_friction, w, interpolation = smooth, extrapolation = linear);
+       t_ebs1 == tablelookup(rpm_ebs, ebs_perc, torque_ebs1, w, ebs_cmd, interpolation = smooth, extrapolation = linear);
+       t_ebs2 == tablelookup(rpm_ebs, ebs_perc, torque_ebs2, w, ebs_cmd, interpolation = smooth, extrapolation = linear);
+       t_ebs3 == tablelookup(rpm_ebs, ebs_perc, torque_ebs3, w, ebs_cmd, interpolation = smooth, extrapolation = linear);
+       theta/100 == throttle;
+       
+       % throttle model as second order filter with delay
+       x1_throttle.der == x2_throttle;
+       x2_throttle.der == -a0_throttle * x1_throttle - a1_throttle * x2_throttle + (throttle);
+       y_throttle == a0_throttle * x1_throttle;
+
+       % ebs torque filtering
+       if ebs_stufe == 1
+           x1_ebs.der == x2_ebs;
+           x2_ebs.der == -a0_ebs * x1_ebs - a1_ebs * x2_ebs + t_ebs1;
+           y_ebs == a0_ebs * x1_ebs;
+       elseif ebs_stufe == 2
+           x1_ebs.der == x2_ebs;
+           x2_ebs.der == -a0_ebs * x1_ebs - a1_ebs * x2_ebs + t_ebs2;
+           y_ebs == a0_ebs * x1_ebs;
+       elseif ebs_stufe == 3
+           x1_ebs.der == x2_ebs;
+           x2_ebs.der == -a0_ebs * x1_ebs - a1_ebs * x2_ebs + t_ebs3;
+           y_ebs == a0_ebs * x1_ebs;
+       else
+           x1_ebs.der == x2_ebs;
+           x2_ebs.der == -a0_ebs * x1_ebs - a1_ebs * x2_ebs;
+           y_ebs == a0_ebs * x1_ebs;
+       end
+
+       % Physical equation 
+       w == (D.w - C.w);
+       te == t_in*y_throttle + t_b;
+       tebs == y_ebs;
+       w.der*cshaft_inertia == t_in*y_throttle + t_b + y_ebs - t_out;
+       we == w;
+       Pe == t_in*y_throttle*w;
+       Pebs == y_ebs*w;
+              
+       sfc == tablelookup(power_consumption, rpm_consumption, consumption, Pe, w, ...
+           interpolation = smooth, extrapolation = linear);
+       fc.der == Pe*sfc;
+              
+    end
+end
+
+% annotations
+%     Icon = '../icons/Mercedes_Benz_engine_OM471.jpg';
+% end
+end
+
+

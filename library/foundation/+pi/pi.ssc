@@ -1,0 +1,37 @@
+component pi
+% pi
+
+inputs
+    xref = {0, '1'};       % xref:left
+    x = {0, '1'};          % x:left 
+end
+
+outputs
+    y = {0, '1'};        % y:right
+end
+
+parameters
+    kp = {5e-3,'1'}             % Proportional gain speed controller    
+    kint = {5e-2, '1/s'}          % Integral gain speed controller
+end
+
+variables(Access=private)
+    ctrl_p = { 0, '1' };    % Throttle from proportional control
+    ctrl_i = { 0, '1' };    % Throttle from integral control
+end
+equations   
+       ctrl_p == kp * (xref - x);
+
+       if ((ctrl_p + ctrl_i) >= 0.999)
+           y == 0.99;
+           ctrl_i.der == 0;
+       elseif ((ctrl_p + ctrl_i) <= -0.99)
+           y == -0.99;
+           ctrl_i.der == 0;
+       else
+           y == ctrl_p + ctrl_i;
+           ctrl_i.der == kint * (xref - x);
+       end
+end
+
+end
