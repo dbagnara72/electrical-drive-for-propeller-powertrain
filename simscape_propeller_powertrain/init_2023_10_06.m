@@ -235,12 +235,12 @@ grid on
 
 
 %% C-Caller
-open_system('fb_sv_bemf_obsv_pmsm');
-Simulink.importExternalCTypes('fb_sv_bemf_obsv_pmsm','Names',{'mavgflt_output_t'});
-Simulink.importExternalCTypes('fb_sv_bemf_obsv_pmsm','Names',{'bemf_mb_obsv_output_t'});
-Simulink.importExternalCTypes('fb_sv_bemf_obsv_pmsm','Names',{'dqvector_pi_output_t'});
-Simulink.importExternalCTypes('fb_sv_bemf_obsv_pmsm','Names',{'sv_pwm_output_t'});
-Simulink.importExternalCTypes('fb_sv_bemf_obsv_pmsm','Names',{'global_state_machine_output_t'});
+open_system('propeller_power_train');
+Simulink.importExternalCTypes('propeller_power_train','Names',{'mavgflt_output_t'});
+Simulink.importExternalCTypes('propeller_power_train','Names',{'bemf_mb_obsv_output_t'});
+Simulink.importExternalCTypes('propeller_power_train','Names',{'dqvector_pi_output_t'});
+Simulink.importExternalCTypes('propeller_power_train','Names',{'sv_pwm_output_t'});
+Simulink.importExternalCTypes('propeller_power_train','Names',{'global_state_machine_output_t'});
 
 
 
