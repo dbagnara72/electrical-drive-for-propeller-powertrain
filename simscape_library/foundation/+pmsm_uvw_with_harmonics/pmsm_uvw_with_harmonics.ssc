@@ -114,22 +114,10 @@ component pmsm_uvw_with_harmonics
                 - (Lmu+La-Lb*cos(2*(theta+2*pi/3))) * iw.der - (-1/2*La-Lb*cos(2*(theta+pi/3))) * iu.der - ...
                 (-1/2*La-Lb*cos(2*(theta+pi))) * iv.der - psi_r_w.der  == 0;
 
-            % psi_r_u.der == -omega * (psi_m * sin(theta) - 0.04*psi_m * sin(-5*theta)- 0.01*psi_m * sin(7*theta));
-            % psi_r_v.der == -omega * (psi_m * sin(theta - 2*pi/3) - 0.04*psi_m * sin(-5*theta - 2*pi/3)- 0.01*psi_m * sin(7*theta - 2*pi/3));
-            % psi_r_w.der == -omega * (psi_m * sin(theta + 2*pi/3) - 0.04*psi_m * sin(-5*theta + 2*pi/3)- 0.01*psi_m * sin(7*theta + 2*pi/3));
-
             psi_r_u.der == -omega * (psi_m * sin(theta) - 0.0*psi_m * sin(-5*theta) - 0.0*psi_m * sin(7*theta));
             psi_r_v.der == -omega * (psi_m * sin(theta - 2*pi/3) - 0.0*psi_m * sin(-5*theta - 2*pi/3) - 0.0*psi_m * sin(7*theta - 2*pi/3));
             psi_r_w.der == -omega * (psi_m * sin(theta + 2*pi/3) - 0.0*psi_m * sin(-5*theta + 2*pi/3) - 0.0*psi_m * sin(7*theta + 2*pi/3));
             
-%             psi_r_u == psi_m * cos(theta);
-%             psi_r_v == psi_m * cos(theta - 2*pi/3);
-%             psi_r_w == psi_m * cos(theta + 2*pi/3);
-            
-%             ud == Ld*id.der + Rs*id - omega*psi_r_q;
-%             uq == Lq*iq.der + Rs*iq + omega*psi_r_d;
-%             uu + uv + uw == 0;
-
             psi_r_d == 2/3*(psi_r_u*cos(theta) + psi_r_v*cos(theta-2*pi/3) + psi_r_w*cos(theta+2*pi/3));
             psi_r_q == -2/3*(psi_r_u*sin(theta) + psi_r_v*sin(theta-2*pi/3) + psi_r_w*sin(theta+2*pi/3));
         
@@ -148,8 +136,6 @@ component pmsm_uvw_with_harmonics
             id == 2/3 * (iu*cos(theta) + iv*cos(theta-2*pi/3) + iw*cos(theta+2*pi/3));
             iq == -2/3 * (iu*sin(theta) + iv*sin(theta-2*pi/3) + iw*sin(theta+2*pi/3));
             
-            % tau_m == 3/2 * number_poles/2 * (psi_s_d * iq - psi_s_q * id);
-            % tau_m == 3/2 * number_poles/2 * (psi_m * iq - 3 * Lb * id * iq);
             tau_m == -number_poles/2 * ((Ld-Lq)/3 * ((iu^2 - 0.5*iv^2 - 0.5*iw^2 - iu*iv ...
                     -iu*iw + 2*iv*iw)*sin(2*theta) + sqrt(3)/2*(iv^2 - iw^2 - 2*iu*iv + 2*iu*iw)*cos(2*theta)) ...
                     + psi_m*((iu - 0.5*iv - 0.5*iw)*sin(theta) - sqrt(3)/2*(iv-iw)*cos(theta)));

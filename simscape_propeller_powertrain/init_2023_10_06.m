@@ -5,7 +5,7 @@ clc
 beep off
 
 %% utility
-fPWM_INV = 24e3;
+fPWM_INV = 30e3;
 dead_time_INV = 0.42e-6;
 dead_time = dead_time_INV;
 delayINV_modA = 0;
@@ -14,7 +14,7 @@ pwm_out_lim = 1;
 %% simulink model variants
 use_cc_ccaller = 1;
 use_cc_simulink = 1 - use_cc_ccaller;
-use_obs_ccaller = 0;
+use_obs_ccaller = 1;
 use_obs_simulink = 1 - use_obs_ccaller;
 use_gyro_model = 1;
 use_I_F_control = 0;
